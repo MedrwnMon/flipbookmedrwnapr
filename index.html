@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- jQuery (for Turn.js) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+  </script>
+  <!-- Turn.js -->
+  <script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
+  <style>
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+    #flipbook { width:100%; height:100%; }
+    #flipbook .page { background:#fff; }
+    #flipbook .page canvas { width:100%; height:auto; display:block; }
+  </style>
+</head>
+<body>
+  <div id="flipbook"></div>
+  <script>
+    (async function() {
+      // Load the PDF that sits alongside index.html
+      const pdf = await pdfjsLib.getDocument('bulletin.pdf').promise;
+      const container = document.getElementById('flipbook');
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const vp   = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width  = vp.width;
+        canvas.height = vp.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+        const pg = document.createElement('div');
+        pg.className = 'page';
+        pg.appendChild(canvas);
+        container.appendChild(pg);
+      }
+
+      $('#flipbook').turn({
+        width: 800,
+        height: 600,
+        autoCenter: true
+      });
+    })();
+  </script>
+</body>
+</html>
